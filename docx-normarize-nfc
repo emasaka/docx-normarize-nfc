@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+import sys, io, os
+import unicodedata
+import zipfile
+import subprocess
+
+DOCUMENT = 'word/document.xml'
+
+docx = sys.argv[1]
+
+with zipfile.ZipFile(docx) as zf:
+    with zf.open(DOCUMENT) as doc_bytes:
+        doc = io.TextIOWrapper(doc_bytes, encoding='utf-8')
+        document = doc.read()
+document_nfc = unicodedata.normalize('NFC', document)
+with open(os.devnull, 'w') as devnull:
+    subprocess.call(['zip', '-d', docx, DOCUMENT], stdout=devnull)
+with zipfile.ZipFile(docx, 'a') as zf:
+    zf.writestr(DOCUMENT, document_nfc)
